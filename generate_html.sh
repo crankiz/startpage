@@ -1,7 +1,7 @@
 #!/bin/bash
 bookmarks="./bookmark.db"
 # sysinfo_page - A script to produce an HTML file
-categories=($(awk -F "," '!seen[$3] {print $3} {++seen[$3]}' "${bookmarks}"))
+mapfile -t categories < <(awk -F "," '!seen[$3] {print $3} {++seen[$3]}' "${bookmarks}")
 
 columns=$((12 / ${#categories[@]}))
 case $columns in
@@ -21,18 +21,18 @@ case $columns in
 esac 
 
 html_links=$(
-    for category in ${categories[@]}
+    for category in "${categories[@]}"
     do
-        links=($(awk -F "," '/'${category}'/{print $1","$2}' "${bookmarks}"))
-        echo -e "${grid}"
-        echo -e "<h4>${category}</h4>"
-        echo -e "<ul>"
-        for link in ${links[@]}
+        mapfile -t links < <(awk -F "," '/'"${category}"'/{print $1","$2}' "${bookmarks}")
+        echo -e "               ${grid}"
+        echo -e "                   <h4>${category}</h4>"
+        echo -e "                       <ul>"
+        for link in "${links[@]}"
         do
-            echo -e "<li><a href="${link##*,}">${link%",${link##*,}"}</a></li>"
+            echo -e "                           <li><a href=""${link##*,}"">${link%",${link##*,}"}</a></li>"
         done
-        echo -e "</ul>"
-        echo -e "</div>"
+        echo -e "                       </ul>"
+        echo -e "               </div>"
     done
 )
 
@@ -44,7 +44,7 @@ cat <<- _EOF_
         <!-- Basic Page Needs
         –––––––––––––––––––––––––––––––––––––––––––––––––– -->
         <meta charset="utf-8">
-        <title>Your page title here :)</title>
+        <title>TS startpage</title>
         <meta name="TS startpage" content="">
         <meta name="Tobias Svedberg" content="">
 
@@ -124,7 +124,7 @@ cat <<- _EOF_
                 </div>
             </div>
             <div class="row">
-                ${html_links}
+${html_links}
             </div>
         </div>
         <!-- End Document
