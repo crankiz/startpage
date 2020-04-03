@@ -1,6 +1,15 @@
 #!/bin/bash
 bookmarks="./bookmark.db"
 # sysinfo_page - A script to produce an HTML file
+weather=$(curl -fsSL "wttr.in/Norrköping?format=4")
+
+# COVID 19
+corona=$(comfirmed,today,death,mortality)
+
+new_cases=$(./xlsx2csv.py -c 1 covid19.xlsx | awk -F "," '/^'$(date --date="yesterday" +%m-%d-%y)'/{print $NF; exit}')
+region=$(./xlsx2csv.py -a covid19.xlsx | awk -F "," '/^Östergötland/{print $1" "$2" "$5}')
+
+# Bookmarks
 mapfile -t categories < <(awk -F "," '!seen[$3] {print $3} {++seen[$3]}' "${bookmarks}")
 
 columns=$((12 / ${#categories[@]}))
@@ -110,17 +119,25 @@ cat <<- _EOF_
         –––––––––––––––––––––––––––––––––––––––––––––––––– -->
         <div class="container">
             <div class="row">
-                <div class="two-thirds column" style="margin-top: 25%">
-                    <h1 class="date" id="day"></h1>
-                    <h4 class="date" id="month"></h4>
-                    <h1 class="date" id="time"></h1>
+                <div class="offset-by-two columns">
+                    <div class="two-thirds column card" style="margin-top: 25%">
+                        <h1 class="date" id="day"></h1>
+                        <h4 class="date" id="month"></h4>
+                        <h1 class="date" id="time"></h1>
+                    </div>
                 </div>
             </div>
             <div class="row">
-                <div class="twelve.columns">
-                    <h6>
-                    4,947☣ 512▲ 239☠ 59♻
-                    </h6>
+                <div class="offset-by-two columns">
+                    <div class="four columns card">
+                        <h5>Weather</h5>
+                        <p>${weather}</p>
+                    </div>
+                    <div class="four columns card">
+                        <h5>COVID 19</h5>
+                        <p>4,947☣ 512▲ 239☠ 59♻</p>
+                        </h5>
+                    </div>
                 </div>
             </div>
             <div class="row">
