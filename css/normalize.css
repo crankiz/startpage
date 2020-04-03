@@ -18,7 +18,7 @@ html {
 
 body {
   margin: 0;
-  background-color: indianred
+  background-color: #3c3c3c;
 }
 
 
@@ -445,5 +445,7 @@ th {
 }
 
 .card {
-  background-color: lavender;
+  background-color: #252526;
+  padding: 2rem;
+  margin-bottom: 2rem;
 }
