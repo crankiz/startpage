@@ -4,11 +4,23 @@ bookmarks="./bookmark.db"
 weather=$(curl -fsSL "wttr.in/Norrköping?format=4")
 
 # COVID 19
-corona=$(comfirmed,today,death,mortality)
+#Total,new,death,mortality)
+get_swe=$(curl -A "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0" -fsSL "https://corona-stats.online/SE?minimal=true"|grep 'Sweden')
+swe_new=$(awk '{ gsub(",",""); print $5}'<<<${get_swe})
+swe_total=$(awk '{ gsub(",",""); print $4}'<<<${get_swe})
+swe_death=$(awk '{ gsub(",",""); print $7}'<<<${get_swe})
+swe_mortality=$(awk 'BEGIN {print ('${swe_death}'*100/'${swe_total}')}'|awk -F. '{print $1"."substr($2,1,2)}')
 
-new_cases=$(./xlsx2csv.py -c 1 covid19.xlsx | awk -F "," '/^'$(date --date="yesterday" +%m-%d-%y)'/{print $NF; exit}')
-region=$(./xlsx2csv.py -a covid19.xlsx | awk -F "," '/^Östergötland/{print $1" "$2" "$5}')
+get_ost=$(./xlsx2csv.py -a covid19.xlsx)
+ost_new=$(awk -F "," '/^'$(date --date="yesterday" +%m-%d-%y)'/{print $NF; exit}' <<<${get_ost})
+ost_total=$(awk -F "," '/^Östergötland/{print $2}' <<<${get_ost})
+ost_death=$(awk -F "," '/^Östergötland/{print $5}' <<<${get_ost})
+ost_mortality=$(awk 'BEGIN {print ('${ost_death}'*100/'${ost_total}')}'|awk -F. '{print $1"."substr($2,1,2)}')
 
+covid19=$(
+    printf "Sweden:\t\t%s☣\t%s▲\t%s☠\t%s%%\n" ${swe_total} ${swe_new} ${swe_death} ${swe_mortality}
+    printf "Östergötland:\t%s☣\t%s▲\t%s☠\t%s%%\n" ${ost_total} ${ost_new} ${ost_death} ${ost_mortality}
+)
 # Bookmarks
 mapfile -t categories < <(awk -F "," '!seen[$3] {print $3} {++seen[$3]}' "${bookmarks}")
 
@@ -135,8 +147,7 @@ cat <<- _EOF_
                     </div>
                     <div class="four columns card">
                         <h5>COVID 19</h5>
-                        <p>4,947☣ 512▲ 239☠ 59♻</p>
-                        </h5>
+                        <p>${covid19}</p>
                     </div>
                 </div>
             </div>
